@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你的星座，你的星图 - 丹德拉黄道十二宫</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-blue: #0a1628;
+            --mid-blue: #1a2744;
+            --light-blue: #2a3f5f;
+            --pale-gold: #d4af37;
+            --bright-gold: #f0d878;
+            --dark-gold: #8b6914;
+            --star-white: #e8e0d0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--deep-blue);
+            color: var(--star-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 星空背景 */
+        .stars-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: var(--star-white);
+            border-radius: 50%;
+            animation: twinkle 3s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* 主容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 标题 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 1.2s ease-out;
+        }
+
+        .header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            color: var(--pale-gold);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            letter-spacing: 8px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1rem;
+            color: var(--bright-gold);
+            opacity: 0.8;
+            letter-spacing: 4px;
+        }
+
+        .divider {
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--pale-gold), transparent);
+            margin: 15px auto;
+        }
+
+        /* 输入区域 */
+        .input-section {
+            background: rgba(26, 39, 68, 0.6);
+            border: 1px solid var(--pale-gold);
+            border-radius: 12px;
+            padding: 25px 40px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 1s ease-out 0.3s both;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .input-group label {
+            font-size: 1.1rem;
+            color: var(--bright-gold);
+        }
+
+        .input-group input[type="date"] {
+            background: var(--deep-blue);
+            border: 2px solid var(--pale-gold);
+            color: var(--star-white);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-group input[type="date"]:focus {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--dark-gold), var(--pale-gold));
+            border: none;
+            color: var(--deep-blue);
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        /* 星盘容器 */
+        .zodiac-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            margin: 20px auto;
+            animation: fadeIn 1.5s ease-out 0.6s both;
+        }
+
+        @media (max-width: 768px) {
+            .zodiac-container {
+                width: 350px;
+                height: 350px;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+                letter-spacing: 4px;
+            }
+        }
+
+        .zodiac-wheel {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, var(--mid-blue) 0%, var(--deep-blue) 70%);
+            border: 3px solid var(--pale-gold);
+            box-shadow: 
+                0 0 60px rgba(212, 175, 55, 0.15),
+                inset 0 0 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* 外圈装饰环 */
+        .outer-ring {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border-radius: 50%;
+            border: 2px dashed var(--dark-gold);
+            opacity: 0.4;
+            animation: rotate 60s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 中心装饰 */
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--light-blue) 0%, var(--deep-blue) 100%);
+            border: 2px solid var(--pale-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .center-circle::before {
+            content: '☥';
+            font-size: 3rem;
+            color: var(--pale-gold);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* 星座扇区 - 使用锥形渐变背景 */
+        .zodiac-sector {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50%;
+            height: 50%;
+            transform-origin: 0 0;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 85%);
+            z-index: 2;
+        }
+
+        .sector-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(42, 63, 95, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .zodiac-sector:hover .sector-bg {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--pale-gold);
+        }
+
+        /* 激活状态 - 仅当前星座亮起 */
+        .zodiac-sector.active .sector-bg {
+            background: rgba(212, 175, 55, 0.35);
+            border-color: var(--bright-gold);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.4), inset 0 0 20px rgba(212, 175, 55, 0.1);
+            animation: sectorPulse 2s ease-in-out infinite;
+        }
+
+        /* 其他区域变暗 */
+        .zodiac-wheel.has-active .zodiac-sector:not(.active) .sector-bg {
+            background: rgba(10, 22, 40, 0.7);
+            border-color: rgba(212, 175, 55, 0.05);
+            opacity: 0.4;
+        }
+
+        .zodiac-wheel.has-active .zodiac-sector:not(.active) .sector-content {
+            opacity: 0.3;
+            filter: grayscale(0.8);
+        }
+
+        @keyframes sectorPulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; box-shadow: 0 0 50px rgba(212, 175, 55, 0.5), inset 0 0 30px rgba(212, 175, 55, 0.15); }
+        }
+
+        .sector-content {
+            position: absolute;
+            top: 30%;
+            left: 60%;
+            transform: translate(-50%, -50%) rotate(calc(var(--rotation) * -1));
+            text-align: center;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+
+        .sector-icon {
+            font-size: 2.2rem;
+            display: block;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5));
+        }
+
+        .sector-name {
+            font-size: 0.85rem;
+            color: var(--pale-gold);
+            font-weight: 600;
+            white-space: nowrap;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .sector-date {
+            font-size: 0.7rem;
+            color: var(--bright-gold);
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        /* 星座图片预览 - 在扇区外侧 */
+        .sector-preview {
+            position: absolute;
+            top: 55%;
+            left: 65%;
+            transform: translate(-50%, -50%) rotate(calc(var(--rotation) * -1));
+            width: 60px;
+            height: 60px;
+            opacity: 0.7;
+            pointer-events: none;
+            transition: all 0.5s ease;
+            z-index: 3;
+        }
+
+        .sector-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.6));
+        }
+
+        .zodiac-wheel.has-active .zodiac-sector:not(.active) .sector-preview {
+            opacity: 0.15;
+        }
+
+        .zodiac-sector.active .sector-preview {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(calc(var(--rotation) * -1)) scale(1.3);
+            filter: drop-shadow(0 0 15px rgba(240, 216, 120, 0.8));
+        }
+
+        /* 详情弹窗 */
+        .detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 22, 40, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .detail-modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, var(--mid-blue), var(--deep-blue));
+            border: 2px solid var(--pale-gold);
+            border-radius: 20px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.2);
+            animation: modalIn 0.6s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            color: var(--pale-gold);
+            cursor: pointer;
+            transition: all 0.3s;
+            background: none;
+            border: none;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            color: var(--bright-gold);
+            transform: rotate(90deg);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.2rem;
+            color: var(--pale-gold);
+            margin-bottom: 10px;
+        }
+
+        .modal-header .egyptian-name {
+            font-size: 1.3rem;
+            color: var(--bright-gold);
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .modal-image-container {
+            width: 100%;
+            height: 350px;
+            border-radius: 12px;
+            border: 2px solid var(--dark-gold);
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            background: linear-gradient(135deg, rgba(26,39,68,0.8), rgba(10,22,40,0.9));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .modal-image-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 40%, rgba(10,22,40,0.6) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.5s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .modal-image-container:hover .modal-image {
+            transform: scale(1.05);
+        }
+
+        .modal-text {
+            line-height: 1.9;
+            font-size: 1.05rem;
+            color: var(--star-white);
+            text-align: justify;
+        }
+
+        .modal-text p {
+            margin-bottom: 15px;
+            text-indent: 2em;
+        }
+
+        .god-badge {
+            display: inline-block;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid var(--pale-gold);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--bright-gold);
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        .god-badge:hover {
+            background: rgba(212, 175, 55, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .modal-footer {
+            margin-top: 25px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+                letter-spacing: 4px;
+            }
+
+            .zodiac-container {
+                width: 350px;
+                height: 350px;
+            }
+
+            .sector-icon {
+                font-size: 1.5rem;
+            }
+
+            .sector-name {
+                font-size: 0.7rem;
+            }
+
+            .sector-preview {
+                width: 40px;
+                height: 40px;
+            }
+
+            .modal-content {
+                padding: 25px;
+            }
+
+            .modal-image-container {
+                height: 250px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 提示信息 */
+        .hint-text {
+            text-align: center;
+            color: var(--bright-gold);
+            opacity: 0.7;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            animation: fadeIn 1s ease 1s both;
+            min-height: 40px;
+        }
+
+        /* 角落装饰 */
+        .corner-decor {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--dark-gold);
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .corner-decor.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+        .corner-decor.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+        .corner-decor.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+        .corner-decor.br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+    </style>
+</head>
+<body>
+    <div class="stars-bg" id="starsBg"></div>
+
+    <!-- 角落装饰 -->
+    <div class="corner-decor tl"></div>
+    <div class="corner-decor tr"></div>
+    <div class="corner-decor bl"></div>
+    <div class="corner-decor br"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1>你的星座，你的星图</h1>
+            <div class="divider"></div>
+            <p class="subtitle">探索丹德拉神殿中的古埃及星空奥秘</p>
+        </header>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="birthDate">请输入你的阳历生日：</label>
+                <input type="date" id="birthDate" max="2026-12-31">
+                <button class="btn-submit" onclick="findZodiac()">探寻星图</button>
+            </div>
+        </div>
+
+        <div class="zodiac-container" id="zodiacContainer">
+            <div class="outer-ring"></div>
+            <div class="zodiac-wheel" id="zodiacWheel"></div>
+            <div class="center-circle"></div>
+        </div>
+
+        <p class="hint-text" id="hintText">输入生日后，属于你的星座区域将高亮闪烁 ✨ 点击可查看古埃及神话详情</p>
+    </div>
+
+    <div class="detail-modal" id="detailModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+                <div class="egyptian-name" id="modalEgyptian"></div>
+            </div>
+            <div class="modal-image-container">
+                <img class="modal-image" id="modalImage" src="" alt="">
+            </div>
+            <div class="modal-text" id="modalText"></div>
+            <div class="modal-footer" id="modalFooter"></div>
+        </div>
+    </div>
+
+    <script>
+        // 星座数据 - 基于丹德拉黄道带和古埃及神话
+        const zodiacData = [
+            {
+                name: "白羊座",
+                egyptian: "Amen-Ra (阿蒙-拉之公羊)",
+                icon: "♈",
+                startMonth: 3, startDay: 21, endMonth: 4, endDay: 19,
+                image: "images/白羊座.PNG",
+                description: "在古埃及神话中，白羊座与创造之神阿蒙（Amen）紧密相连。公羊是阿蒙的圣兽，象征着生命力与再生。丹德拉神殿中的公羊形象代表着春分时节太阳的重生，正如阿蒙神在混沌中开辟天地。古埃及人相信，出生于这个星座的人拥有开创者的勇气，如同阿蒙神每日驾驭太阳船穿越天际，带来光明与秩序。",
+                gods: ["阿蒙 (Amen)", "拉 (Ra)", "赫努姆 (Khnum)"]
+            },
+            {
+                name: "金牛座",
+                egyptian: "Apis (圣牛阿匹斯)",
+                icon: "♉",
+                startMonth: 4, startDay: 20, endMonth: 5, endDay: 20,
+                image: "images/金牛座.PNG",
+                description: "金牛座在丹德拉黄道带中表现为圣牛阿匹斯（Apis），这是古埃及最受尊崇的神圣动物之一。阿匹斯被认为是普塔神（Ptah）的化身，象征着丰饶、力量与生育。孟菲斯的神庙中供奉着活的阿匹斯圣牛，它的每一个动作都被视为神谕。古埃及人相信，金牛座的人拥有大地般稳固的力量，如同尼罗河泛滥后肥沃的土地，孕育着无尽的生机。",
+                gods: ["普塔 (Ptah)", "哈托尔 (Hathor)", "奥西里斯 (Osiris)"]
+            },
+            {
+                name: "双子座",
+                egyptian: "Horus the Elder & Younger (双荷鲁斯)",
+                icon: "♊",
+                startMonth: 5, startDay: 21, endMonth: 6, endDay: 21,
+                image: "images/双子座.PNG",
+                description: "双子座在古埃及天文学中对应着天空之神荷鲁斯的双重形象——年长的荷鲁斯（Horus the Elder）与年幼的荷鲁斯（Horus the Younger）。这对神圣的孪生象征着二元统一：光明与黑暗、秩序与混沌、生命与死亡的永恒循环。丹德拉神殿的浮雕中，双荷鲁斯共同守护着地平线，确保太阳每日的重生。双子座的人被认为拥有敏锐的洞察力和双重智慧。",
+                gods: ["荷鲁斯 (Horus)", "托特 (Thoth)", "玛阿特 (Ma'at)"]
+            },
+            {
+                name: "巨蟹座",
+                egyptian: "Scarab (圣甲虫凯布利)",
+                icon: "♋",
+                startMonth: 6, startDay: 22, endMonth: 7, endDay: 22,
+                image: "images/巨蟹座.PNG",
+                description: "在丹德拉黄道带中，巨蟹座并非螃蟹，而是圣甲虫凯布利（Khepri）——黎明之阳的化身。古埃及人观察到圣甲虫推动粪球的行为，将其视为太阳神拉推动太阳穿越天际的象征。凯布利代表着重生、转化与永恒的循环。出生于巨蟹座的人被认为拥有保护者的本能和深刻的直觉力，如同圣甲虫守护着太阳的重生，带来每日的希望。",
+                gods: ["凯布利 (Khepri)", "伊西斯 (Isis)", "塞赫麦特 (Sekhmet)"]
+            },
+            {
+                name: "狮子座",
+                egyptian: "Sekhmet (狮首女神塞赫麦特)",
+                icon: "♌",
+                startMonth: 7, startDay: 23, endMonth: 8, endDay: 22,
+                image: "images/狮子座.PNG",
+                description: "狮子座在古埃及神话中对应着强大的狮首女神塞赫麦特（Sekhmet），她是战争与治愈的双重化身，也是太阳神拉的女儿。传说塞赫麦特的怒吼能焚烧大地，而她的慈悲又能治愈百病。丹德拉神殿中的狮形象征着王权与神圣的力量。古埃及人相信，狮子座的人天生具有领袖气质，如同塞赫麦特守护玛阿特（宇宙秩序），他们的热情能够照亮周围的一切。",
+                gods: ["塞赫麦特 (Sekhmet)", "拉 (Ra)", "玛阿特 (Ma'at)"]
+            },
+            {
+                name: "处女座",
+                egyptian: "Isis (伊西斯女神)",
+                icon: "♍",
+                startMonth: 8, startDay: 23, endMonth: 9, endDay: 22,
+                image: "images/处女座.PNG",
+                description: "处女座在丹德拉黄道带中表现为伟大的母亲女神伊西斯（Isis）。她是奥西里斯的妻子，荷鲁斯的母亲，象征着智慧、魔法与母性的保护。伊西斯收集了奥西里斯被撕裂的身体碎片，用魔法使他复活，因此成为再生与治愈的象征。丹德拉神殿正是供奉哈托尔-伊西斯的神圣之地。处女座的人被认为拥有敏锐的观察力和治愈他人的能力，如同伊西斯用智慧重建破碎的世界。",
+                gods: ["伊西斯 (Isis)", "哈托尔 (Hathor)", "奈芙蒂斯 (Nephthys)"]
+            },
+            {
+                name: "天秤座",
+                egyptian: "Ma'at (真理女神玛阿特)",
+                icon: "♎",
+                startMonth: 9, startDay: 23, endMonth: 10, endDay: 23,
+                image: "images/天秤座.PNG",
+                description: "天秤座对应着古埃及最重要的宇宙概念——玛阿特（Ma'at），真理、正义与秩序的化身。她通常被描绘为头戴鸵鸟羽毛的女神，在亡灵审判中，死者的心脏会与玛阿特的羽毛称重。只有心灵纯洁者才能进入来世。丹德拉神殿的天花板浮雕中，天秤象征着宇宙平衡的永恒维护。天秤座的人天生追求和谐与公正，如同玛阿特维持着天地间的神圣秩序。",
+                gods: ["玛阿特 (Ma'at)", "托特 (Thoth)", "阿努比斯 (Anubis)"]
+            },
+            {
+                name: "天蝎座",
+                egyptian: "Serqet (蝎子女神塞尔凯特)",
+                icon: "♏",
+                startMonth: 10, startDay: 24, endMonth: 11, endDay: 22,
+                image: "images/天蝎座.PNG",
+                description: "天蝎座在古埃及神话中对应塞尔凯特（Serqet），蝎子女神，也是死者的守护者。她保护着伊西斯在沼泽中隐藏荷鲁斯时免受毒蝎侵害，因此成为对抗毒药与邪恶力量的守护神。在法老的木乃伊制作过程中，塞尔凯特的祭司负责处理内脏，确保死者安全进入来世。天蝎座的人被认为拥有深刻的洞察力和强大的转化能力，如同塞尔凯特将毒素转化为治愈的力量。",
+                gods: ["塞尔凯特 (Serqet)", "伊西斯 (Isis)", "索贝克 (Sobek)"]
+            },
+            {
+                name: "射手座",
+                egyptian: "Nephthys & Anubis (奈芙蒂斯与阿努比斯)",
+                icon: "♐",
+                startMonth: 11, startDay: 23, endMonth: 12, endDay: 21,
+                image: "images/射手座.PNG",
+                description: "射手座在古埃及天文学中与亡灵的守护密切相关。奈芙蒂斯（Nephthys）是伊西斯的姐妹，死者的守护神；而阿努比斯（Anubis）则是豺首的防腐与亡灵引导之神。射手座的弓箭象征着灵魂穿越星际的旅程，从现世射向来世。丹德拉神殿的奥西里斯礼拜堂正是为了指引灵魂穿越宇宙而设。射手座的人被认为拥有探索未知的勇气和哲学家的智慧，如同亡灵在星图中寻找永恒的归宿。",
+                gods: ["阿努比斯 (Anubis)", "奈芙蒂斯 (Nephthys)", "奥西里斯 (Osiris)"]
+            },
+            {
+                name: "摩羯座",
+                egyptian: "Khnum & Hapi (赫努姆与哈匹)",
+                icon: "♑",
+                startMonth: 12, startDay: 22, endMonth: 1, endDay: 19,
+                image: "images/摩羯座.PNG",
+                description: "摩羯座在古埃及神话中融合了两位重要神祇：公羊首的造物神赫努姆（Khnum）与尼罗河洪水之神哈匹（Hapi）。赫努姆在陶轮上塑造人类与神祇的身体，而哈匹则带来滋养大地的年度洪水。丹德拉黄道带中的山羊鱼形象象征着从混沌水域中诞生的生命。摩羯座的人被认为拥有坚韧不拔的意志和创造现实的非凡能力，如同赫努姆精心塑造每一个灵魂，哈匹滋润每一寸土地。",
+                gods: ["赫努姆 (Khnum)", "哈匹 (Hapi)", "普塔 (Ptah)"]
+            },
+            {
+                name: "水瓶座",
+                egyptian: "Hapi the Nile God (尼罗河神哈匹)",
+                icon: "♒",
+                startMonth: 1, startDay: 20, endMonth: 2, endDay: 18,
+                image: "images/水瓶座.PNG",
+                description: "水瓶座在丹德拉黄道带中有着最独特的古埃及诠释——它不是希腊的水瓶侍者，而是尼罗河神哈匹（Hapi），双手各持一个花瓶，倾倒出滋养埃及的生命之水。哈匹的洪水带来了肥沃的黑土（Kemet），使沙漠中的文明得以繁荣。古埃及人庆祝哈匹的降临如同庆祝生命的本身。水瓶座的人被认为拥有革新者的精神和人道主义的胸怀，如同哈匹将生命的源泉分享给每一个灵魂。",
+                gods: ["哈匹 (Hapi)", "努恩 (Nun)", "塔芙努特 (Tefnut)"]
+            },
+            {
+                name: "双鱼座",
+                egyptian: "Sobek & Neith (索贝克与奈特)",
+                icon: "♓",
+                startMonth: 2, startDay: 19, endMonth: 3, endDay: 20,
+                image: "images/双鱼座.PNG",
+                description: "双鱼座在古埃及神话中与尼罗河的神圣生物紧密相连。鳄鱼神索贝克（Sobek）是水域与肥沃的主宰，象征着法老的权力与保护；而奈特（Neith）则是狩猎与编织女神，也是尼罗河三角洲的守护神。双鱼象征着尼罗河中的生命之源，以及灵魂在宇宙之海中的双重旅程。丹德拉神殿的浮雕中，鱼类形象常与再生仪式相伴。双鱼座的人被认为拥有深邃的同情心和超凡的直觉，如同尼罗河连接着现世与来世的神秘通道。",
+                gods: ["索贝克 (Sobek)", "奈特 (Neith)", "奥西里斯 (Osiris)"]
+            }
+        ];
+
+        let activeIndex = -1;
+
+        // 生成星空背景
+        function createStars() {
+            const container = document.getElementById('starsBg');
+            for (let i = 0; i < 150; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 3 + 's';
+                container.appendChild(star);
+            }
+        }
+
+        // 生成黄道十二宫扇区
+        function createZodiacWheel() {
+            const wheel = document.getElementById('zodiacWheel');
+            const anglePerSector = 360 / 12;
+
+            zodiacData.forEach((zodiac, index) => {
+                const sector = document.createElement('div');
+                sector.className = 'zodiac-sector';
+                sector.id = `sector-${index}`;
+
+                // 计算角度：从12点方向开始，顺时针
+                const rotation = -90 + (index * anglePerSector) + (anglePerSector / 2);
+                sector.style.transform = `rotate(${rotation}deg)`;
+                sector.style.setProperty('--rotation', `${rotation}deg`);
+
+                sector.innerHTML = `
+                    <div class="sector-bg"></div>
+                    <div class="sector-content">
+                        <span class="sector-icon">${zodiac.icon}</span>
+                        <div class="sector-name">${zodiac.name}</div>
+                        <div class="sector-date">${zodiac.startMonth}月${zodiac.startDay}日-${zodiac.endMonth}月${zodiac.endDay}日</div>
+                    </div>
+                    <div class="sector-preview">
+                        <img src="${zodiac.image}" alt="${zodiac.name}" loading="lazy" onerror="this.style.display='none'">
+                    </div>
+                `;
+
+                sector.addEventListener('click', () => showDetail(index));
+                wheel.appendChild(sector);
+            });
+        }
+
+        // 判断日期属于哪个星座
+        function getZodiacIndex(month, day) {
+            for (let i = 0; i < zodiacData.length; i++) {
+                const z = zodiacData[i];
+                const start = z.startMonth * 100 + z.startDay;
+                const end = z.endMonth * 100 + z.endDay;
+                const current = month * 100 + day;
+
+                if (z.startMonth > z.endMonth) {
+                    // 跨年的星座（摩羯座、水瓶座、双鱼座）
+                    if (current >= start || current <= end) return i;
+                } else {
+                    if (current >= start && current <= end) return i;
+                }
+            }
+            return -1;
+        }
+
+        // 查找并高亮星座
+        function findZodiac() {
+            const dateInput = document.getElementById('birthDate');
+            if (!dateInput.value) {
+                alert('请先选择你的阳历生日');
+                return;
+            }
+
+            const date = new Date(dateInput.value);
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+
+            const index = getZodiacIndex(month, day);
+
+            if (index !== -1) {
+                // 清除之前的高亮
+                document.querySelectorAll('.zodiac-sector').forEach(s => s.classList.remove('active'));
+                document.getElementById('zodiacWheel').classList.remove('has-active');
+
+                // 高亮当前星座
+                const sector = document.getElementById(`sector-${index}`);
+                sector.classList.add('active');
+                document.getElementById('zodiacWheel').classList.add('has-active');
+                activeIndex = index;
+
+                // 更新提示文字
+                const zodiac = zodiacData[index];
+                document.getElementById('hintText').innerHTML = 
+                    `✨ 你的星座是 <strong style="color: var(--bright-gold)">${zodiac.name}</strong> — ${zodiac.egyptian} ✨<br>` +
+                    `<small style="opacity: 0.7">点击高亮区域，探索古埃及神话中的${zodiac.name}</small>`;
+
+                // 自动弹出详情
+                setTimeout(() => showDetail(index), 800);
+            }
+        }
+
+        // 显示详情弹窗
+        function showDetail(index) {
+            const zodiac = zodiacData[index];
+            const modal = document.getElementById('detailModal');
+
+            // 如果点击的不是当前高亮的星座，先高亮它
+            if (activeIndex !== index) {
+                document.querySelectorAll('.zodiac-sector').forEach(s => s.classList.remove('active'));
+                document.getElementById('zodiacWheel').classList.add('has-active');
+                document.getElementById(`sector-${index}`).classList.add('active');
+                activeIndex = index;
+            }
+
+            document.getElementById('modalTitle').textContent = zodiac.name;
+            document.getElementById('modalEgyptian').textContent = zodiac.egyptian;
+            document.getElementById('modalImage').src = zodiac.image;
+            document.getElementById('modalImage').alt = zodiac.name + ' - ' + zodiac.egyptian;
+
+            // 构建描述文本
+            let textHTML = `<p>${zodiac.description}</p>`;
+            document.getElementById('modalText').innerHTML = textHTML;
+
+            // 构建神祇标签
+            let godsHTML = '<p style="text-align: center; margin-bottom: 10px;"><strong style="color: var(--pale-gold)">相关古埃及神祇：</strong></p><div style="text-align: center;">';
+            zodiac.gods.forEach(god => {
+                godsHTML += `<span class="god-badge">${god}</span>`;
+            });
+            godsHTML += '</div>';
+            document.getElementById('modalFooter').innerHTML = godsHTML;
+
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            const modal = document.getElementById('detailModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // 键盘ESC关闭
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // 初始化
+        window.onload = function() {
+            createStars();
+            createZodiacWheel();
+        };
+    </script>
+</body>
+</html>
